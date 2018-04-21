@@ -1,5 +1,7 @@
 # These scripts are meant for comparing images
 
+Source and details: http://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_template_matching/py_template_matching.html
+
 ## To set up a virtual environment
  - run `pip install virtualenv` then in some directory (separate from the git repository) type `virtualenv <yourEnvName>`.
  - To access the virtualenv type `source /path/to/<yourEnvName>/bin/activate`.
