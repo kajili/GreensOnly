@@ -3,9 +3,10 @@
 Source and details: http://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_template_matching/py_template_matching.html
 
 ## To set up a virtual environment
- - run `pip install virtualenv` then in some directory (separate from the git repository) type `virtualenv <yourEnvName>`.
- - To access the virtualenv type `source /path/to/<yourEnvName>/bin/activate`.
+ - Run `pip install virtualenv` then in some directory (separate from the git repository) type `virtualenv yourEnvName`.
+ - To access the virtualenv type `source /path/to/yourEnvName/bin/activate`.
  - Then to install the requirements for these comparison scripts, type `pip install -r /path/to/requirements.txt`.
+ - When done using the code, can leave the virtualenv by typing `deactivate`
  - For more information about virtualenv watch this short and well made video: https://www.youtube.com/watch?v=N5vscPTWKOk
 
 ## To run templateMatching.py
