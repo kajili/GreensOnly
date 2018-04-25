@@ -9,7 +9,7 @@ import os
 
 image_list = []
 
-original1 = cv2.imread("images/green8.jpg")
+original1 = cv2.imread("testBase.jpg")
 #print (original.shape)
 #compare = cv2.imread("images/green3.jpg")
 
@@ -41,7 +41,7 @@ def compare_images(imageA, imageB, title, s):
 percent = 0
 
 #The path for my folder
-path = "C:/Users/silve/Desktop/atollogy/GreensOnly/images/23/"
+path = "testImages/"
 for filename in os.listdir(path):
 	#only targeting the jpg images
 	if filename.endswith(".jpg"):
