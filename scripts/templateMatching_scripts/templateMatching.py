@@ -26,7 +26,7 @@ templateBasename = os.path.basename(templateImgPath)
 sourceStrippedName = os.path.splitext(sourceBasename)[0]
 templateStrippedName = os.path.splitext(templateBasename)[0]
 ##Combine the sourceStrippedName and templateStrippedName (file names without paths or file extensions) to create a new directory name
-newDir = sourceStrippedName + "&&" + templateStrippedNamed
+newDir = sourceStrippedName + "&&" + templateStrippedName
     
 ## Checks if the path already exists 
 if not os.path.exists(newDir):  
