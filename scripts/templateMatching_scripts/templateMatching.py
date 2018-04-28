@@ -1,12 +1,14 @@
 # Usage: `python3 templateMatching.py <sourceImgPath> <templateImgPath>`
 
 import sys
+import os
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 
 sourceImgPath = sys.argv[1]
 templateImgPath = sys.argv[2]
+
 img = cv2.imread(sourceImgPath, 0)
 img2 = img.copy()
 template = cv2.imread(templateImgPath, 0)
@@ -16,10 +18,24 @@ w, h = template.shape[::-1]
 methods = ['cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR',
             'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
 
+# Create a new directory based on image file names
+## Strip the path before the file names
+sourceBasename = os.path.basename(sourceImgPath)    
+templateBasename = os.path.basename(templateImgPath)
+## Strip the extensions after the file names
+sourceStrippedName = os.path.splitext(sourceBasename)[0]
+templateStrippedName = os.path.splitext(templateBasename)[0]
+##Combine the sourceStrippedName and templateStrippedName (file names without paths or file extensions) to create a new directory name
+newDir = sourceStrippedName + "&&" + templateStrippedNamed
+    
+## Checks if the path already exists 
+if not os.path.exists(newDir):  
+    ## Creates a new directory with the names of source and template images                        
+    os.makedirs(newDir)                                 
+
 for meth in methods:
     img = img2.copy()
     method = eval(meth)
-
     # Apply template Matching
     res = cv2.matchTemplate(img,template,method)
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
@@ -33,10 +49,14 @@ for meth in methods:
 
     cv2.rectangle(img,top_left, bottom_right, 255, 2)
 
-    plt.subplot(121),plt.imshow(res,cmap = 'gray')
-    plt.title('Matching Result'), plt.xticks([]), plt.yticks([])
-    plt.subplot(122),plt.imshow(img,cmap = 'gray')
-    plt.title('Detected Point'), plt.xticks([]), plt.yticks([])
-    plt.suptitle(meth)
+    #Images are saved to newDir folder
+    cv2.imwrite(newDir + "/result_" + meth + ".jpg", img)
 
-    plt.show()
+    # # Can uncomment to display output when running.
+    # plt.subplot(121),plt.imshow(res,cmap = 'gray')
+    # plt.title('Matching Result'), plt.xticks([]), plt.yticks([])
+    # plt.subplot(122),plt.imshow(img,cmap = 'gray')
+    # plt.title('Detected Point'), plt.xticks([]), plt.yticks([])
+    # plt.suptitle(meth)
+
+    # plt.show()
