@@ -6,6 +6,7 @@
 " Date:     04-13-2018
 """
 
+import sys
 import math
 from PIL import ImageTk, Image 
 
@@ -71,19 +72,17 @@ class PreprocessedImage:
 
             print()
 
-    def imageAverageColor(self, xDiv, yDiv):
+    def imageAverageColor(self, xLen, yLen):
         """
-        Creates a new image of as many (xDiv X yDiv) squares, averaging the pixel values inside 
-        the squares
+        Creates a new image of (xLen pixels by yLenpixel ) squares, averaging 
+        the pixel values inside the squares
         """
         length, height = self.getSize()
-        xlen = math.ceil(int(length/xDiv))
-        ylen = math.ceil(int(height/yDiv))
 
-        for i in range(0, length-xlen, xlen):
-            for j in range(0, height-ylen, ylen):
+        for i in range(0, length-xLen, xLen):
+            for j in range(0, height-yLen, yLen):
 
-                self.gridAverageColor(i, i+xlen, j, j+ylen)
+                self.gridAverageColor(i, i+xLen, j, j+yLen)
 
         self.__image.save(MASKED_P)
 
@@ -117,12 +116,18 @@ class PreprocessedImage:
 
 def main():    
 
-    test = PreprocessedImage(IMAGE_P)
-    test.imageAverageColor( 100, 100)
+    #test = PreprocessedImage(IMAGE_P)
+    #test.imageAverageColor(2, 2)
 
     #print ("Size", test.getSize())
     #test.printRGBMatrix()
     #print(test.getRGBMatrix())
+
+    filename =  sys.argv[1]
+    pixelsPerSquare = int (sys.argv[2])
+    workingImg = PreprocessedImage(IMAGE_P)
+    workingImg.imageAverageColor(pixelsPerSquare, pixelsPerSquare)
+
 
 if __name__ == '__main__':
     main()
