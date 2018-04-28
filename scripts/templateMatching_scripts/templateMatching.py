@@ -1,10 +1,15 @@
+# Usage: `python3 templateMatching.py <sourceImgPath> <templateImgPath>`
+
+import sys
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 
-img = cv2.imread('testImagesForTemplateMatching/source3_2.jpg',0)
+sourceImgPath = sys.argv[1]
+templateImgPath = sys.argv[2]
+img = cv2.imread(sourceImgPath, 0)
 img2 = img.copy()
-template = cv2.imread('testImagesForTemplateMatching/template3_1.jpg',0)
+template = cv2.imread(templateImgPath, 0)
 w, h = template.shape[::-1]
 
 # All the 6 methods for comparison in a list
