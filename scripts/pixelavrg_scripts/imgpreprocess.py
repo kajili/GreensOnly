@@ -6,6 +6,7 @@
 " Date:     04-13-2018
 """
 
+import os
 import sys
 import math
 from PIL import ImageTk, Image 
@@ -25,7 +26,7 @@ class PreprocessedImage:
         Constructor takes path to image IMAGE_PATH to initialize object 
         """
         
-        #self.__filepath = image_path[:-4]
+        self.__filepath = image_path
         self.__image = Image.open(image_path)
         self.__pixels = self.__image.load()
 
@@ -84,7 +85,9 @@ class PreprocessedImage:
 
                 self.gridAverageColor(i, i+xLen, j, j+yLen)
 
-        self.__image.save(MASKED_P)
+        pathPair = os.path.splitext(self.__filepath)
+        masked = pathPair[0] + "_m" + pathPair[1]
+        self.__image.save(masked)
 
     def gridAverageColor(self, x0, x1, y0, y1):
         """
@@ -114,6 +117,13 @@ class PreprocessedImage:
 
                 self.setPixel(x, y, new_RGB)
 
+def averageImage(filepath, pixelLength, pixelHeight):
+    """Creates new image that is the result of averaging the image found int FILEPATH 
+       and averaging its pixels to PIXELLENGTH by PIXELHEIGHT squares
+    """
+    workingImg = PreprocessedImage(filepath)
+    workingImg.imageAverageColor(pixelLength, pixelHeight)
+
 def main():    
 
     #test = PreprocessedImage(IMAGE_P)
@@ -125,7 +135,7 @@ def main():
 
     filename =  sys.argv[1]
     pixelsPerSquare = int (sys.argv[2])
-    workingImg = PreprocessedImage(IMAGE_P)
+    workingImg = PreprocessedImage(filename)
     workingImg.imageAverageColor(pixelsPerSquare, pixelsPerSquare)
 
 
