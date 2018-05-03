@@ -4,77 +4,140 @@
 " File:     masking.py
 " Author:   Cesar Neri  <ceneri@ucsc.edu>
 " Author:   Kevin Ajili <kajili@ucsc.edu>
-" Author:   An Tran <anngtran@ucsc.edu>
+" Author:   An Tran     <anngtran@ucsc.edu>
 " Date:     05-2-2018
 """
 
 import os
 import cv2
+import fnmatch
+import argparse
 import numpy as np
 
-NEW_DIR = "./Masks/"
+def parseArguments():
+    """
+    Parses all terminal arguments passed and returns them in a dictionary 
+    """
 
-def removeBackgroungMOG():
-  """
-  Given a short video, MOG masking is applied and resulting mask
-  frames are saved to NEW_DIR directory
-  """
+    parser = argparse.ArgumentParser(description='Mask Creator')
 
-  cap = cv2.VideoCapture('coins.mp4')
+    #parser.add_argument('-m', '--mode', required=True, type=int, 
+     #                   help="Execution mode (1 or 2)")
+    parser.add_argument('-d', '--directory', required=True, 
+                        help="Path to directory where images created should be stored")
+    parser.add_argument('-v', '--video', required=True,
+                        help="Path to video for mask to be based of")
 
-  fgbg = cv2.createBackgroundSubtractorMOG2()
+    args = vars(parser.parse_args())
+    return args
 
-  ## Checks if the path already exists 
-  if not os.path.exists(NEW_DIR):  
-    ## Creates a new directory with the names of source and template images                        
-    os.makedirs(NEW_DIR)
+def generateIndividualMasks(directoryPath, videoPath):
+    """
+    Given a short video, MOG masking is applied and resulting mask
+    frames are saved to NEW_DIR directory. 
+    Return the number of masks generated
+    """
 
-  maskCounter = 0
-  while True:
-    et, frame = cap.read()
-    gmask = fgbg.apply(frame)
+    FRAME_NAME = directoryPath + "/mask"
+    
+    #Create directory if doesnt exist already
+    if not os.path.exists(directoryPath):                       
+        os.makedirs(directoryPath)
 
-    cv2.imshow('original',frame)
-    cv2.imshow('mask',gmask)
+    #Load video
+    cap = cv2.VideoCapture(videoPath)
+
+    fgbg = cv2.createBackgroundSubtractorMOG2()
+
+    #Go trough every frame
+    maskCounter = 0
+    while True:
+        ret, frame = cap.read()
+
+        #There is another frame
+        if ret == True:
+
+            gmask = fgbg.apply(frame)
+
+            cv2.imshow('original',frame)
+            cv2.imshow('mask',gmask)
+
+            #Images are saved to newDir folder
+            cv2.imwrite(FRAME_NAME + str(maskCounter) + ".jpg", gmask)
+            maskCounter += 1
+
+            k = cv2.waitKey(1) & 0xff
+            if k == 27:
+                break
+
+        #Video is over
+        else:
+            break;
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+    return maskCounter
+
+def createBlackImage(directoryPath):
+    """
+    Creates an black image that is of the same size as the images found in 
+    the folder at DIRECTORYPATH
+    """
+    
+    #Get path to any image inside the directory
+    pattern = "*.jpg"
+    for _, _, files in os.walk(directoryPath + '/'):
+        sample_path = fnmatch.filter(files, pattern)[0]
+        break;
+
+    #Use any image to get right emasurement
+    sample_image = cv2.imread(directoryPath + "/" + sample_path)
+    height = np.size(sample_image, 0)
+    width = np.size(sample_image, 1)
+
+    #Black image of right size
+    blk_img = np.zeros((height, width, 3),  np.uint8)
+    return blk_img
+
+def combineMasks(directoryPath, numImages):
+    """
+    Uses masks created by generateIndividualMasks(), to combine them
+    and create the final mask 
+    """
+
+    IMG_NAME = directoryPath + "/mask"
+
+    mask = createBlackImage(directoryPath)
+
+    for imgCount in range(1,numImages):
+
+        img_path = IMG_NAME + str(imgCount) + ".jpg"
+        if os.path.exists(img_path):
+
+            img = cv2.imread(img_path)
+            # combine foreground+background
+            mask = cv2.bitwise_or(mask, img)
+
+            #print(imgCount)
 
     #Images are saved to newDir folder
-    cv2.imwrite(NEW_DIR + "mask" + str(maskCounter) + ".jpg", gmask)
-    maskCounter += 1
-
-    k = cv2.waitKey(30) & 0xff
-    if k == 27:
-      break
-   
-  cap.release()
-  cv2.destroyAllWindows()
-
-def combineMasks(numImages, width, height):
-  """
-  Uses masks created by removeBackgroungMOG(), to combine them
-  and create the final mask 
-  """
-
-  mask = cv2.imread(NEW_DIR + "mask0.jpg")
-
-  for imgCount in range(1,numImages):
-
-    img_path = NEW_DIR + "mask" + str(imgCount) + ".jpg"
-    if os.path.exists(img_path):
-
-      img = cv2.imread(img_path)
-      # combine foreground+background
-      mask = cv2.bitwise_or(mask, img)
-
-      print(imgCount)
-
-  #Images are saved to newDir folder
-  cv2.imwrite(NEW_DIR + "final.jpg", mask)
+    cv2.imwrite(directoryPath + "/final.jpg", mask)
 
 def main():
 
-  #removeBackgroungMOG()
+    args = parseArguments()
+    DIR_PATH = args['directory']
+    VID_PATH = args['video']
+  
+    individual_masks = generateIndividualMasks(DIR_PATH, VID_PATH)
 
-  combineMasks(366, 1280, 720)
+    #Delete images if neede during pause/idle time
+    input("Press enter when you are ready to combine the masks.")
 
+    combineMasks(DIR_PATH, individual_masks)
+
+  
 if __name__ == '__main__':
   main()
+
