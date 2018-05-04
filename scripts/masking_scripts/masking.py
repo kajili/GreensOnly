@@ -124,6 +124,66 @@ def combineMasks(directoryPath, numImages):
     #Images are saved to newDir folder
     cv2.imwrite(directoryPath + "/final.jpg", mask)
 
+def test():
+    """
+    Test in a single image (For debugging only)
+    """
+    #Create two simple images
+    img = cv2.imread("img_data/lol.jpg")
+    mask = cv2.imread("Masks/final.jpg")
+    
+    #Code to invert colors
+    #mask = (255-mask)
+
+    #Mask
+    result = cv2.bitwise_and(mask, img)
+    
+    #Needed to show image until you enter ESC
+    while True:
+        cv2.imshow('result', result)
+
+        k = cv2.waitKey(5000) & 0xff
+        if k == 27:
+            break
+
+    cv2.destroyAllWindows()
+
+def maskVideo(directoryPath, videoPath):
+    """
+    Applies the mask to every frame in the original video. Displays the result.
+    takes DIRECTORYPATH to get the final mask image, and the VIDEOPATH of the original
+    video
+    """
+
+    #Load final mask
+    mask = cv2.imread(directoryPath + "/final.jpg")
+
+    #Load video
+    cap = cv2.VideoCapture(videoPath)
+
+    #Go through every frame
+    while True:
+        ret, frame = cap.read()
+
+        #There is another frame
+        if ret == True:
+
+            result = cv2.bitwise_and(mask, frame)
+
+            cv2.imshow('Result', result)
+
+            k = cv2.waitKey(1) & 0xff
+            if k == 27:
+                break
+
+        #Video is over
+        else:
+            break;
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+
 def main():
 
     args = parseArguments()
@@ -132,12 +192,15 @@ def main():
   
     individual_masks = generateIndividualMasks(DIR_PATH, VID_PATH)
 
-    #Delete images if neede during pause/idle time
+    #Delete images if needed during pause/idle time
     input("Press enter when you are ready to combine the masks.")
 
+    #Create final mask by combining all individual masks
     combineMasks(DIR_PATH, individual_masks)
+
+    #Display original video with mask applied
+    maskVideo(DIR_PATH, VID_PATH)
 
   
 if __name__ == '__main__':
   main()
-
