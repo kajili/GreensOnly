@@ -1,7 +1,7 @@
 #!/usr/env/bin python3
 
 """
-" File:     masking.py
+" File:     createMask.py
 " Author:   Cesar Neri  <ceneri@ucsc.edu>
 " Author:   Kevin Ajili <kajili@ucsc.edu>
 " Author:   An Tran     <anngtran@ucsc.edu>
@@ -148,41 +148,6 @@ def test():
 
     cv2.destroyAllWindows()
 
-def maskVideo(directoryPath, videoPath):
-    """
-    Applies the mask to every frame in the original video. Displays the result.
-    takes DIRECTORYPATH to get the final mask image, and the VIDEOPATH of the original
-    video
-    """
-
-    #Load final mask
-    mask = cv2.imread(directoryPath + "/final.jpg")
-
-    #Load video
-    cap = cv2.VideoCapture(videoPath)
-
-    #Go through every frame
-    while True:
-        ret, frame = cap.read()
-
-        #There is another frame
-        if ret == True:
-
-            result = cv2.bitwise_and(mask, frame)
-
-            cv2.imshow('Result', result)
-
-            k = cv2.waitKey(1) & 0xff
-            if k == 27:
-                break
-
-        #Video is over
-        else:
-            break;
-
-    cap.release()
-    cv2.destroyAllWindows()
-
 
 def main():
 
@@ -198,8 +163,9 @@ def main():
     #Create final mask by combining all individual masks
     combineMasks(DIR_PATH, individual_masks)
 
-    #Display original video with mask applied
-    maskVideo(DIR_PATH, VID_PATH)
+    # #(Method now moved to it's own script, applyMask.py)
+    # # Display original video with mask applied
+    # maskVideo(DIR_PATH, VID_PATH)
 
   
 if __name__ == '__main__':
