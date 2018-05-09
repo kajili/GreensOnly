@@ -32,8 +32,8 @@ ap = argparse.ArgumentParser()
 
 ap.add_argument("-b", "--background", help = "base background of image", nargs = 1)
 ap.add_argument("-s", "--sample", help = "base sample of image", nargs = 1)
-ap.add_argument("-d", "--degrees", help = "minimum number of degrees to rotate", default = 10, type = int, nargs = 1)
-ap.add_argument("-q", "--quantity", help = "number of output images", default = 20, type = int, nargs = 1)
+ap.add_argument("-d", "--degrees", help = "minimum number of degrees to rotate", default = [10], type = int, nargs = 1)
+ap.add_argument("-q", "--quantity", help = "number of output images", default = [20], type = int, nargs = 1)
 ap.add_argument("-p", "--path", help = "output path", default = ["./generated_results"], nargs = 1)
 ap.add_argument("-m", "--multiple", help = "flag for allowing multiple region selection on images", nargs = '?', const = 5, default = 0, type = int)
 
@@ -41,8 +41,8 @@ args = vars(ap.parse_args())
 
 background = cv2.imread(args["background"][0], 1)
 sample_greens = cv2.imread(args["sample"][0], 1)
-degrees_per = args["degrees"]
-quantity = args["quantity"]
+degrees_per = args["degrees"][0]
+quantity = args["quantity"][0]
 path = args["path"][0] 
 mul_count = args["multiple"]
 
