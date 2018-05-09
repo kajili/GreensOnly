@@ -1,6 +1,5 @@
 #Note: colors in openCV are in GBR order instead of RGB
 #Usage: python ./colorDetect.py --image [image name]
-#citation: some code from here is used: https://www.pyimagesearch.com/2014/08/04/opencv-python-color-detection/
 
 import numpy as np
 import argparse
@@ -12,27 +11,26 @@ args = vars(ap.parse_args())
 
 image = cv2.imread(args["image"])
 
-boundaries = [([0, 60, 0], [100, 255, 100]),
-              ([20, 80, 20], [40, 255, 40]),
-             ]
+hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-for (lower, upper) in boundaries:
-    lower = np.array(lower, dtype = "uint8")
-    upper = np.array(upper, dtype = "uint8")
+#green boundaries in HSV
+lower_bound = np.array([35, 5, 5])
+upper_bound = np.array([79, 255, 255])
 
-    mask = cv2.inRange(image, lower, upper)
-    mask2 = cv2.inRange(image, lower, upper)
+#for (lower, upper) in boundaries:
+    #lower = np.array(lower, dtype = "uint8")
+    #upper = np.array(upper, dtype = "uint8")
 
-    
-    for line in mask:
-        print(line)
-        for element in line:
-            print(element)
-            
-    
-    print(mask)
-    print(mask2)
-    output = cv2.bitwise_and(image, image, mask = mask)
+mask = cv2.inRange(hsv, lower_bound, upper_bound)
 
-    cv2.imshow("images", np.hstack([image, output]))
-    cv2.waitKey(0)
+#show image with mask applied
+output = cv2.bitwise_and(image, image, mask = mask)
+cv2.imshow("Greens", np.hstack([image, output]))
+
+#show image with inverted mask
+mask2 = cv2.bitwise_not(mask)
+inverted_output = cv2.bitwise_and(image, image, mask = mask2)
+cv2.imshow("Not_greens", np.hstack([image, inverted_output]))
+
+
+cv2.waitKey(0)
