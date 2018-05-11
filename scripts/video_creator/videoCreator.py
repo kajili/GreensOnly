@@ -2,7 +2,7 @@
 
 # Source: http://tsaith.github.io/combine-images-into-a-video-with-python-3-and-opencv-3.html
 # Codec Information: https://docs.opencv.org/3.2.0/dd/d43/tutorial_py_video_display.html
-# Usage: videoCreator.py -ext png -o output.mp4
+# Usage: videoCreator.py -ext jpg -o output.mp4
 
 import cv2
 import argparse
@@ -15,7 +15,7 @@ ap.add_argument("-o", "--output", required=False, default='output.mp4', help="ou
 args = vars(ap.parse_args())
 
 # Arguments
-dir_path = '/home/n102/sample_images'
+dir_path = '/home/n102/sharedGithub/sample_images'
 ext = args['extension']
 output = args['output']
 
