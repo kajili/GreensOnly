@@ -1,8 +1,8 @@
 #!/usr/env/bin python3
 
 """
-" File:     findContaminants.py
-" Date:     05-10-2018
+" File:     findContaminantsV2.py
+" Date:     05-21-2018
 """
 
 import os
