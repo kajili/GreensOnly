@@ -1,13 +1,24 @@
-import cv2 as cv
+"""
+" File:     adaptiveThresholding.py
+" Author:   Kevin Ajili <kajili@ucsc.edu>
+" Date:     05-18-2018
+"""
+import cv2
 import numpy as np
 from matplotlib import pyplot as plt
-img = cv.imread('test.jpg',0)
-img = cv.medianBlur(img,5)
-ret,th1 = cv.threshold(img,127,255,cv.THRESH_BINARY)
-th2 = cv.adaptiveThreshold(img,255,cv.ADAPTIVE_THRESH_MEAN_C,\
-            cv.THRESH_BINARY,11,2)
-th3 = cv.adaptiveThreshold(img,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C,\
-            cv.THRESH_BINARY,11,2)
+
+img = cv2.imread('ContaminantSampleOutput/1_3_sec.jpg',0)
+img = cv2.medianBlur(img,5)
+ret,th1 = cv2.threshold(img,127,255,cv2.THRESH_BINARY)
+th2 = cv2.adaptiveThreshold(img,255,cv2.ADAPTIVE_THRESH_MEAN_C,\
+            cv2.THRESH_BINARY,11,2)
+th3 = cv2.adaptiveThreshold(img,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,\
+            cv2.THRESH_BINARY,11,2)
+
+# # Save the result of gaussian thresholding
+# cv2.imwrite("gaussThresh.jpg", th3)
+
+#Display output of all methods
 titles = ['Original Image', 'Global Thresholding (v = 127)',
             'Adaptive Mean Thresholding', 'Adaptive Gaussian Thresholding']
 images = [img, th1, th2, th3]

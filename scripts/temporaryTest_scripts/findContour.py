@@ -1,7 +1,12 @@
+"""
+" File:     findContour.py
+" Author:   Kevin Ajili <kajili@ucsc.edu>
+" Date:     05-18-2018
+"""
 import numpy as np
 import cv2
      
-im = cv2.imread('test2.jpg')
+im = cv2.imread('ContaminantSampleOutput/1_3_sec.jpg')
 
 imgray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
 
