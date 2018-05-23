@@ -7,17 +7,20 @@
 
 import os
 import cv2
+import shutil
+import fnmatch
 import argparse
 import numpy as np
 import tkinter as tk
 from PIL import Image
 from matplotlib import pyplot as plt
-import fnmatch
-import shutil
 
-DEFAULT_WHITE_PERCENTAGE = 99.4
 DEFAULT_PIXEL_SIZE = 10000
+DEFAULT_WHITE_PERCENTAGE = 99.4
 DEFAULT_OUTPUT_DIRECTORY = "ContaminantOutput"
+TEMP_BKGRND_MASK_DIRECTORY =  "./Masks"
+TEMP_BKGRND_MASK = "final.jpg"
+
 
 def turnGreenLight():
     return cv2.imread("green_light_icon.png")
@@ -142,7 +145,6 @@ def generateIndividualMasks(directoryPath, videoPath):
     frames are saved to NEW_DIR directory. 
     Return the number of masks generated
     """
-
     FRAME_NAME = directoryPath + "/mask"
     
     #Create directory if doesnt exist already
@@ -154,6 +156,7 @@ def generateIndividualMasks(directoryPath, videoPath):
 
     fgbg = cv2.createBackgroundSubtractorMOG2()
 
+    #counter to skip first couple of frames
     skipImage = 0
 
     #Go trough every frame
@@ -166,13 +169,15 @@ def generateIndividualMasks(directoryPath, videoPath):
 
             gmask = fgbg.apply(frame)
 
+            #Skip fisrt couple of frames
             if skipImage > 60 and skipImage < 210:
-            	#Images are saved to newDir folder
+            	
+                #Images are saved to newDir folder
             	cv2.imwrite(FRAME_NAME + str(maskCounter) + ".jpg", gmask)
             	maskCounter += 1
+
             skipImage += 1	
             
-
         #Video is over
         else:
             break;
@@ -222,26 +227,25 @@ def combineMasks(directoryPath, numImages):
             # combine foreground+background
             mask = cv2.bitwise_or(mask, img)
 
-            #print(imgCount)
-
     #Images are saved to newDir folder
-    cv2.imwrite("final.jpg", mask)
+    cv2.imwrite(TEMP_BKGRND_MASK, mask)
 
 
 def createBackgroundMask(videoPath):
     """
-    !!TEMPORARY FUNCTION
-    If a mask is not passed a mask should be created, for now a mask 
-    should ***ALWAYS BE PASSED*** otherwise, may god have mercy on you!
+    If a mask is not passed a mask for video found in VIDEOPATH is created
     """
-    Mask_directory = "./Mask" 
-    maskcount = generateIndividualMasks(Mask_directory, videoPath)
-    input("Press enter when you are ready to combine the masks.")
-    combineMasks(Mask_directory, maskcount)
+    maskCount = generateIndividualMasks(TEMP_BKGRND_MASK_DIRECTORY, videoPath)
 
-    shutil.rmtree(Mask_directory)
+    #Delete images if needed during pause/idle time
+    input("Press enter when you are ready to combine the masks.")
+    
+    #Create final mask by combining all individual masks
+    combineMasks(TEMP_BKGRND_MASK_DIRECTORY, maskCount)
+
+    shutil.rmtree(TEMP_BKGRND_MASK_DIRECTORY)
     #print("Need to create Mask")
-    return "final.jpg"
+    return TEMP_BKGRND_MASK
 
 def applyThresholding(frame):
 
