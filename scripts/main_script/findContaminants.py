@@ -12,6 +12,8 @@ import numpy as np
 import tkinter as tk
 from PIL import Image
 from matplotlib import pyplot as plt
+import fnmatch
+import shutil
 
 DEFAULT_WHITE_PERCENTAGE = 99.4
 DEFAULT_PIXEL_SIZE = 10000
@@ -134,14 +136,112 @@ def createOutputDirectory(directoryPath):
     if not os.path.exists(directoryPath):                       
         os.makedirs(directoryPath)
 
-def createBackgroundMask():
+def generateIndividualMasks(directoryPath, videoPath):
+    """
+    Given a short video, MOG masking is applied and resulting mask
+    frames are saved to NEW_DIR directory. 
+    Return the number of masks generated
+    """
+
+    FRAME_NAME = directoryPath + "/mask"
+    
+    #Create directory if doesnt exist already
+    if not os.path.exists(directoryPath):                       
+        os.makedirs(directoryPath)
+
+    #Load video
+    cap = cv2.VideoCapture(videoPath)
+
+    fgbg = cv2.createBackgroundSubtractorMOG2()
+
+    skipImage = 0
+
+    #Go trough every frame
+    maskCounter = 0
+    while True:
+        ret, frame = cap.read()
+
+        #There is another frame
+        if ret == True:
+
+            gmask = fgbg.apply(frame)
+
+            if skipImage > 60 and skipImage < 210:
+            	#Images are saved to newDir folder
+            	cv2.imwrite(FRAME_NAME + str(maskCounter) + ".jpg", gmask)
+            	maskCounter += 1
+            skipImage += 1	
+            
+
+        #Video is over
+        else:
+            break;
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+    return maskCounter
+
+def createBlackImage(directoryPath):
+    """
+    Creates an black image that is of the same size as the images found in 
+    the folder at DIRECTORYPATH
+    """
+    
+    #Get path to any image inside the directory
+    pattern = "*.jpg"
+    for _, _, files in os.walk(directoryPath + '/'):
+        sample_path = fnmatch.filter(files, pattern)[0]
+        break;
+
+    #Use any image to get right emasurement
+    sample_image = cv2.imread(directoryPath + "/" + sample_path)
+    height = np.size(sample_image, 0)
+    width = np.size(sample_image, 1)
+
+    #Black image of right size
+    blk_img = np.zeros((height, width, 3),  np.uint8)
+    return blk_img
+
+def combineMasks(directoryPath, numImages):
+    """
+    Uses masks created by generateIndividualMasks(), to combine them
+    and create the final mask 
+    """
+
+    IMG_NAME = directoryPath + "/mask"
+
+    mask = createBlackImage(directoryPath)
+
+    for imgCount in range(1,numImages):
+
+        img_path = IMG_NAME + str(imgCount) + ".jpg"
+        if os.path.exists(img_path):
+
+            img = cv2.imread(img_path)
+            # combine foreground+background
+            mask = cv2.bitwise_or(mask, img)
+
+            #print(imgCount)
+
+    #Images are saved to newDir folder
+    cv2.imwrite("final.jpg", mask)
+
+
+def createBackgroundMask(videoPath):
     """
     !!TEMPORARY FUNCTION
     If a mask is not passed a mask should be created, for now a mask 
     should ***ALWAYS BE PASSED*** otherwise, may god have mercy on you!
     """
-    print("Need to create Mask")
-    return "lel"
+    Mask_directory = "./Mask" 
+    maskcount = generateIndividualMasks(Mask_directory, videoPath)
+    input("Press enter when you are ready to combine the masks.")
+    combineMasks(Mask_directory, maskcount)
+
+    shutil.rmtree(Mask_directory)
+    #print("Need to create Mask")
+    return "final.jpg"
 
 def applyThresholding(frame):
 
@@ -291,7 +391,7 @@ def main():
     #Arguments
     videoPath, outputDirPath, bckgdMaskPath, longFlag, whitePercentFlag, minPixelSize = parseArguments()
     if bckgdMaskPath == None:
-        bckgdMaskPath = createBackgroundMask()
+        bckgdMaskPath = createBackgroundMask(videoPath)
 
     #Initialize objects
     createOutputDirectory(outputDirPath)
