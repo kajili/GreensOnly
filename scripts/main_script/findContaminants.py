@@ -10,6 +10,7 @@ import cv2
 import utils
 import argparse
 import tkinter as tk
+import multiprocessing as mp
 from matplotlib import pyplot as plt
 
 DEFAULT_PIXEL_SIZE = 10000
@@ -67,23 +68,23 @@ def resizeWindows():
     cv2.namedWindow('background_strip', cv2.WINDOW_NORMAL)
     cv2.namedWindow('green_strip', cv2.WINDOW_NORMAL)
     cv2.namedWindow('flag_contaminant', cv2.WINDOW_NORMAL)
-    cv2.namedWindow('highlight_contaminant', cv2.WINDOW_NORMAL)
+    #cv2.namedWindow('highlight_contaminant', cv2.WINDOW_NORMAL)
 
     cv2.moveWindow("original", 0, 30);
     cv2.moveWindow("background_strip", mid_width, 30);
     cv2.moveWindow("green_strip", mid_width*2, 30);
-    cv2.moveWindow("flag_contaminant", 0, mid_height+30);
-    cv2.moveWindow("highlight_contaminant", mid_width, mid_height+30);
-    #cv2.moveWindow("contaminants", mid_width*2, mid_height+30);
+    cv2.moveWindow("flag_contaminant", mid_width, mid_height+50);
+    #cv2.moveWindow("highlight_contaminant", mid_width, mid_height+50);
+    #cv2.moveWindow("contaminants", mid_width*2, mid_height+50);
 
     cv2.resizeWindow('original', mid_width, mid_height)
     cv2.resizeWindow('background_strip', mid_width, mid_height)
     cv2.resizeWindow('green_strip', mid_width, mid_height)
     cv2.resizeWindow('flag_contaminant', mid_width, mid_height)
-    cv2.resizeWindow('highlight_contaminant', mid_width, mid_height)
+    #cv2.resizeWindow('highlight_contaminant', mid_width, mid_height)
     #cv2.resizeWindow('contaminants', mid_width, mid_height)
 
-def processDisplay(original, backgroundStrip, greenStrip, flagContam, highlContam):
+def processDisplay(original, backgroundStrip, greenStrip, flagContam): #, highlContam):
     """
     Updates and displays ORIGINAL, BACKGROUNDSTRIP and GREENSTRIP images/frames
     in their corresponding windows
@@ -92,7 +93,7 @@ def processDisplay(original, backgroundStrip, greenStrip, flagContam, highlConta
     cv2.imshow('background_strip', backgroundStrip)           
     cv2.imshow('green_strip', greenStrip)
     cv2.imshow('flag_contaminant', flagContam)
-    cv2.imshow('highlight_contaminant', highlContam)
+    #cv2.imshow('highlight_contaminant', highlContam)
 
 def createOutputDirectory(directoryPath):
     """
@@ -114,9 +115,6 @@ def main():
     bMask = cv2.imread(bckgdMaskPath)
     videoCapture = cv2.VideoCapture(videoPath)
 
-    #Image declaration, for faster calling
-    greenLight = utils.turnGreenLight()
-
     if longFlag:
         resizeWindows()
 
@@ -135,7 +133,7 @@ def main():
         #Check for possible contaminant
         contaminantImg, isFoundFirstPass = utils.findContaminant(greenStrip, whitePercentFlag)
         #
-        highlightImg = greenLight
+        highlightImg = None
 
         #If image is flagged
         if isFoundFirstPass:
@@ -151,7 +149,7 @@ def main():
 
         #Display different masked frames
         if longFlag:
-            processDisplay(frame, backgroundStrip, greenStrip, contaminantImg, highlightImg)
+            processDisplay(frame, backgroundStrip, greenStrip, contaminantImg ) #, highlightImg)
 
             k = cv2.waitKey(1) & 0xff
             if k == 27:

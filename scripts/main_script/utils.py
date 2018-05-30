@@ -300,4 +300,4 @@ def highlightContaminant(flaggedImg, minRegionSize):
             
         return image_with_box, True
 
-    return turnGreenLight(), False
+    return None, False
