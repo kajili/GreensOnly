@@ -5,6 +5,7 @@
 " Date:     05-21-2018
 """
 
+import time
 import os
 import cv2
 import utils
@@ -13,6 +14,7 @@ import tkinter as tk
 import multiprocessing as mp
 from matplotlib import pyplot as plt
 
+SLEEP_TIME = 2
 DEFAULT_PIXEL_SIZE = 10000
 DEFAULT_WHITE_PERCENTAGE = 99.4
 DEFAULT_OUTPUT_DIRECTORY = "ContaminantOutput"
@@ -102,6 +104,28 @@ def createOutputDirectory(directoryPath):
     if not os.path.exists(directoryPath):                       
         os.makedirs(directoryPath)
 
+def processImageHighlight(imgQueue, outputDirPath, minPixelSize):
+    """
+    Function to be used as a separate process that highlight an image if one exists in the queue,
+    otherwise, process sleeps
+    """
+
+    while True:
+
+        if imgQueue.empty():
+            #Sleep 2 seconds
+            time.sleep(SLEEP_TIME)
+
+        else:
+            workingImg, timeSt = imgQueue.get()
+
+            #Check to highlight contaminant
+            highlightImg, isFoundSecondPass = utils.highlightContaminant(workingImg, minPixelSize)
+
+            #If highlight works
+            if isFoundSecondPass:           
+                cv2.imwrite(outputDirPath + '/' +  str(timeSt) + ".jpg", highlightImg)
+
 
 def main():
 
@@ -114,6 +138,11 @@ def main():
     createOutputDirectory(outputDirPath)
     bMask = cv2.imread(bckgdMaskPath)
     videoCapture = cv2.VideoCapture(videoPath)
+
+    #Initialize queue and child process
+    ImageQueue = mp.Queue()
+    highlightingProcess = mp.Process(target=processImageHighlight, args=(ImageQueue, outputDirPath, minPixelSize) )
+    highlightingProcess.start()
 
     if longFlag:
         resizeWindows()
@@ -132,24 +161,18 @@ def main():
         greensOnly, greenStrip = utils.maskGreen(backgroundStrip)
         #Check for possible contaminant
         contaminantImg, isFoundFirstPass = utils.findContaminant(greenStrip, whitePercentFlag)
-        #
-        highlightImg = None
 
         #If image is flagged
         if isFoundFirstPass:
 
-            #Check to highlight contaminant
-            highlightImg, isFoundSecondPass = utils.highlightContaminant(greenStrip, minPixelSize)
+            #Timestamps is passed along with image
+            timestamp = utils.getTimeStamp(videoCapture)
 
-            #If highlight works
-            if isFoundSecondPass:
-
-                timestamp = utils.getTimeStamp(videoCapture)
-                cv2.imwrite(outputDirPath + '/' +  str(timestamp) + ".jpg", highlightImg)
+            ImageQueue.put( (greenStrip, timestamp) )
 
         #Display different masked frames
         if longFlag:
-            processDisplay(frame, backgroundStrip, greenStrip, contaminantImg ) #, highlightImg)
+            processDisplay(frame, backgroundStrip, greenStrip, contaminantImg ) 
 
             k = cv2.waitKey(1) & 0xff
             if k == 27:
@@ -158,6 +181,30 @@ def main():
     videoCapture.release()
     cv2.destroyAllWindows()
 
+    #Display different masked frames
+    if longFlag:
+        print("Video feed over.")
 
+    print("Waiting for image processing to complete...")
+
+    #Allow child process to complete before terminating
+    while True:
+
+        if ImageQueue.empty():
+            #Allow an extra 3 seconds for last image to be created
+            time.sleep(3)
+
+            highlightingProcess.terminate()
+            highlightingProcess.join()
+            break
+
+        else:    
+            #Sleep 2 seconds
+            time.sleep(SLEEP_TIME)
+
+    print("Image processing complete.")
+
+    
 if __name__ == '__main__':
     main()
+
